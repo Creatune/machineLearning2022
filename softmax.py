@@ -6,7 +6,6 @@ nnfs.init()
 
 # softmax activation function gives us the probability distribution for a layer's output
 # softmax(x) = e^z/sigma(e^z)
-# softmax([1, 2, 3]) = [e^1/(e^(1+2+3), e^2/(e^(1+2+3), e^3/(e^(1+2+3)) = [0.09003057, 0.24472847, 0.66524096]
 
 # Softmax activation
 class Activation_Softmax:
@@ -20,4 +19,11 @@ class Activation_Softmax:
         probabilities = exp_values / np.sum(exp_values, axis=1,
                                             keepdims=True)
 
-        self.output = probabilities
+        # self.output = probabilities
+
+        output = probabilities
+        return(output)
+
+# softmax([1, 2, 3]) = [e^1/(e^(1+2+3), e^2/(e^(1+2+3), e^3/(e^(1+2+3)) = [0.09003057, 0.24472847, 0.66524096]
+softmax = Activation_Softmax()
+print(softmax.forward([[1,2,3]]))
