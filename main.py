@@ -17,8 +17,15 @@ class Layer_Dense:
     # Forward pass
     def forward(self, inputs):
         # Calculate output values from inputs, weights and biases
+        self.inputs = inputs
         self.output = np.dot(inputs, self.weights) + self.biases
 
+    def backward(self, dvalues):
+        # Gradients on parameters
+        self.dweights = np.dot(self.inputs.T, dvalues)
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        # Gradient on values
+        self.dinputs = np.dot(dvalues, self.weights.T)
 
 # ReLU activation
 class Activation_ReLU:
@@ -35,6 +42,7 @@ class Activation_Softmax:
     # Forward pass
     def forward(self, inputs):
         # Get unnormalized probabilities
+        self.inputs = inputs
         exp_values = np.exp(inputs - np.max(inputs, axis=1,
                                             keepdims=True))
         # Normalize them for each sample
@@ -42,6 +50,13 @@ class Activation_Softmax:
                                             keepdims=True)
 
         self.output = probabilities
+
+    def backward(self, dvalues):
+        # Gradients on parameters
+        self.dweights = np.dot(self.inputs.T, dvalues)
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        # Gradient on values
+        self.dinputs = np.dot(dvalues, self.weights.T)
 
 
 class Loss:
