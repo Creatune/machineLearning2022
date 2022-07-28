@@ -24,3 +24,10 @@ dvalue = 1.0
 drelu_dz = dvalue * (1. if z > 0 else 0.)
 
 print(drelu_dz)
+
+# going further back, taking derivatives of the input * weight + bias function (neuron output function)
+dsum_dxw0 = 1  # derivative is 1 because do/do,x(x + y) = 1 + 0 = 1; where do/do,x represents partial derivative wrt x
+
+drelu_dxw0 = drelu_dz * dsum_dxw0  # chain rule
+
+print(drelu_dxw0)
