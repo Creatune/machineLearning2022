@@ -61,3 +61,29 @@ drelu_dx2 = drelu_dxw2 * dmul_dx2
 drelu_dw2 = drelu_dxw2 * dmul_dw2
 print(drelu_dx0, drelu_dw0, drelu_dx1, drelu_dw1, drelu_dx2, drelu_dw2)
 
+# the 3 immediate lines below are the gradients found by backpropagating using chain rule
+dx = [drelu_dx0, drelu_dx1, drelu_dx2]  # gradients on inputs
+dw = [drelu_dw0, drelu_dw1, drelu_dw2]  # gradients on weights
+db = drelu_db  # gradient on bias...just 1 bias here.
+
+# changing the weights and biases using a negative fraction of the gradient to show that we can decrease the neuron
+# output using backprop
+print(w, b)
+w[0] += -0.0001 * dw[0]  # an optimizer usually takes care of adjusting the weights and biases, but for now we just
+# did a negative fraction of the gradient arbitrarily
+w[0] += -0.01 * dw[0]
+w[0] += -0.01 * dw[0]
+b += -0.01 * db
+print(w, b)
+# performing a forward pass again to prove that we actually decreased the neuron output:
+xw0 = x[0] * w[0]
+xw1 = x[1] * w[1]
+xw2 = x[2] * w[2]
+z = xw0 + xw1 + xw2 + b
+y = max(z, 0)
+print(y)  # this was previously 6, but now 5.969, which means that we successfully decreased the neuron's output
+
+# NOTE: decreasing the neuron's output does not usually make sense but this was done for simplicity. we usually want
+# to decrease how wrong our model is, which means we would have to take the derivative of the loss function
+
+# ALL of the above has to be applied to each and every neuron in a neural network
