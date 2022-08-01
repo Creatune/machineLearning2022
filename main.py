@@ -164,6 +164,15 @@ class Activation_Softmax_Loss_CategoricalCrossentropy():
         # Normalize gradient
         self.dinputs = self.dinputs / samples
 
+class optimizer_SGD:
+
+    def __init__(self, learning_rate=1.0):
+        self.learning_rate = learning_rate
+
+    def update_params(self, layer):
+        layer.weights += self.learning_rate * layer.dweights
+        layer.biases += self.learning_rate * layer.dbiases
+
 # Create dataset
 X, y = spiral_data(samples=100, classes=3)
 # Create Dense layer with 2 input features and 3 output values
