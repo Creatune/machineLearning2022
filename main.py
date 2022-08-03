@@ -1,7 +1,10 @@
 import numpy as np
 import nnfs
 from nnfs.datasets import spiral_data
+
 nnfs.init()
+
+
 # Dense layer
 class Layer_Dense:
     # Layer initialization
@@ -9,12 +12,14 @@ class Layer_Dense:
         # Initialize weights and biases
         self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)
         self.biases = np.zeros((1, n_neurons))
+
     # Forward pass
     def forward(self, inputs):
         # Remember input values
         self.inputs = inputs
         # Calculate output values from inputs, weights and biases
         self.output = np.dot(inputs, self.weights) + self.biases
+
     # Backward pass
     def backward(self, dvalues):
         # Gradients on parameters
@@ -23,6 +28,8 @@ class Layer_Dense:
         # Gradient on values
         self.dinputs = np.dot(dvalues, self.weights.T)
     # ReLU activation
+
+
 class Activation_ReLU:
     # Forward pass
     def forward(self, inputs):
@@ -32,8 +39,8 @@ class Activation_ReLU:
         self.output = np.maximum(0, inputs)
 
         # Backward pass
-    def backward(self, dvalues):
 
+    def backward(self, dvalues):
         # Since we need to modify original variable,
         # let's make a copy of values first
         self.dinputs = dvalues.copy()
@@ -41,11 +48,12 @@ class Activation_ReLU:
         self.dinputs[self.inputs <= 0] = 0
 
     # Softmax activation
+
+
 class Activation_Softmax:
 
     # Forward pass
     def forward(self, inputs):
-
         # Remember input values
         self.inputs = inputs
         # Get unnormalized probabilities
@@ -58,7 +66,6 @@ class Activation_Softmax:
 
     # Backward pass
     def backward(self, dvalues):
-
         # Create uninitialized array
         self.dinputs = np.empty_like(dvalues)
         # Enumerate outputs and gradients
@@ -75,6 +82,7 @@ class Activation_Softmax:
         self.dinputs[index] = np.dot(jacobian_matrix,
                                      single_dvalues)
 
+
 # Common loss class
 class Loss:
     # Calculates the data and regularization losses
@@ -87,6 +95,8 @@ class Loss:
         # Return loss
         return data_loss
     # Cross-entropy loss
+
+
 class Loss_CategoricalCrossentropy(Loss):
     # Forward pass
     def forward(self, y_pred, y_true):
@@ -99,8 +109,8 @@ class Loss_CategoricalCrossentropy(Loss):
         # only if categorical labels
         if len(y_true.shape) == 1:
             correct_confidences = y_pred_clipped[
-            range(samples),
-            y_true
+                range(samples),
+                y_true
             ]
         # Mask values - only for one-hot encoded labels
         elif len(y_true.shape) == 2:
@@ -128,6 +138,7 @@ class Loss_CategoricalCrossentropy(Loss):
         # Normalize gradient
         self.dinputs = self.dinputs / samples
 
+
 # Softmax classifier - combined Softmax activation
 # and cross-entropy loss for faster backward step
 class Activation_Softmax_Loss_CategoricalCrossentropy():
@@ -140,7 +151,6 @@ class Activation_Softmax_Loss_CategoricalCrossentropy():
 
     # Forward pass
     def forward(self, inputs, y_true):
-
         # Output layer's activation function
         self.activation.forward(inputs)
         # Set the output
@@ -150,7 +160,6 @@ class Activation_Softmax_Loss_CategoricalCrossentropy():
 
     # Backward pass
     def backward(self, dvalues, y_true):
-
         # Number of samples
         samples = len(dvalues)
         # If labels are one-hot encoded,
@@ -164,6 +173,7 @@ class Activation_Softmax_Loss_CategoricalCrossentropy():
         # Normalize gradient
         self.dinputs = self.dinputs / samples
 
+
 class optimizer_SGD:
 
     def __init__(self, learning_rate=1.0):
@@ -172,6 +182,7 @@ class optimizer_SGD:
     def update_params(self, layer):
         layer.weights += self.learning_rate * layer.dweights
         layer.biases += self.learning_rate * layer.dbiases
+
 
 # Create dataset
 X, y = spiral_data(samples=100, classes=3)
@@ -203,8 +214,8 @@ print('loss:', loss)
 # calculate values along first axis
 predictions = np.argmax(loss_activation.output, axis=1)
 if len(y.shape) == 2:
- y = np.argmax(y, axis=1)
-accuracy = np.mean(predictions==y)
+    y = np.argmax(y, axis=1)
+accuracy = np.mean(predictions == y)
 # Print accuracy
 print('acc:', accuracy)
 # Backward pass
@@ -217,3 +228,46 @@ print(dense1.dweights)
 print(dense1.dbiases)
 print(dense2.dweights)
 print(dense2.dbiases)
+
+# CREATING A NEW NEURAL NETWORK WITH OPTIMIZER AND MORE THAN ONE EPOCH
+
+# Create dataset
+X, y = spiral_data(samples=100, classes=3)
+# Create Dense layer with 2 input features and 64 output values
+dense1 = Layer_Dense(2, 64)
+# Create ReLU activation (to be used with Dense layer):
+activation1 = Activation_ReLU()
+# Create second Dense layer with 64 input features (as we take output
+# of previous layer here) and 3 output values (output values)
+dense2 = Layer_Dense(64, 3)
+# Create Softmax classifier's combined loss and activation
+loss_activation = Activation_Softmax_Loss_CategoricalCrossentropy()
+# Create optimizer
+optimizer = optimizer_SGD()
+
+for epoch in range(10001):
+    # forward pass:
+    dense1.forward(X)
+    # activation function:
+    activation1.forward(dense1.output)
+    # forward pass through second layer:
+    dense2.forward(activation1.output)
+    loss = loss_activation.forward(dense2.output, y)
+    # calculating accuracy:
+    predictions = np.argmax(loss_activation.output, axis=1)
+    if len(y.shape) == 2:
+        y = np.argmax(y, axis=1)
+    accuracy = np.mean(predictions == y)
+
+    if not epoch % 100:
+        print(f'epoch: {epoch}, ' + f'acc: {accuracy:.3f}, ' + f'loss: {loss}')
+
+    # backprop
+    loss_activation.backward(loss_activation.output, y)
+    dense2.backward(loss_activation.dinputs)
+    activation1.backward(dense2.dinputs)
+    dense1.backward(activation1.dinputs)
+
+    # Update weights and biases
+    optimizer.update_params(dense1)
+    optimizer.update_params(dense2)

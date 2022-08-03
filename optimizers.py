@@ -6,3 +6,6 @@ class optimizer_SGD:
     def update_params(self, layer):
         layer.weights += self.learning_rate * layer.dweights
         layer.biases += self.learning_rate * layer.dbiases
+
+
+# check updates in main.py
