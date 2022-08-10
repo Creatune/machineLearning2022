@@ -63,9 +63,10 @@ clf = LinearRegression(n_jobs=-1)  # n_jons uses as many threads as possible whe
 
 clf.fit(X_train, y_train)
 
-accuracy = clf.score(X_test, y_test)
+y_pred = clf.predict(X_test)
 
-print(accuracy)
+accuracy = clf.score(X_test, y_test)
+# print(accuracy)
 
 # SVM doesn't do better than linear regression
 
@@ -73,4 +74,9 @@ for k in ['linear', 'poly', 'rbf', 'sigmoid']:
     clf = svm.SVR(kernel=k)
     clf.fit(X_train, y_train)
     confidence = clf.score(X_test, y_test)
-    print(k, confidence)
+    # print(k, confidence)
+
+# print(X_test)
+
+res = pd.DataFrame({'predicted stock prices': y_pred})
+res.to_csv('googleStocks.csv')
