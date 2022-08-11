@@ -1,9 +1,10 @@
-from math import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import style
 from collections import Counter
 import warnings
+import pandas as pd
+import random
 
 style.use('fivethirtyeight')
 
@@ -27,12 +28,30 @@ def k_nearest_neighbors(known_data, data_to_predict, k=3):
     return vote_result
 
 
-result = k_nearest_neighbors(dataset, new_features, k=3)
-print(result)
+df = pd.read_csv('breast-cancer-wisconsin.data')
+df.replace('?', -99999, inplace=True)
+df.drop(['id'], 1, inplace=True)
+full_data = df.astype(float).values.tolist()
+random.shuffle(full_data)
+test_size = 0.2
+train_set = {2: [], 4: []}
+test_set = {2: [], 4: []}
+train_data = full_data[:-int(test_size * len(full_data))]
+test_data = full_data[-int(test_size * len(full_data)):]
 
-for i in dataset:
-    for ii in dataset[i]:
-        plt.scatter(ii[0], ii[1], s=100, color=i)
+for i in train_data:
+    train_set[i[-1]].append(i[:-1])
+for i in test_data:
+    test_set[i[-1]].append(i[:-1])
 
-plt.scatter(new_features[0], new_features[1], color=result)
-plt.show()
+correct = 0
+total = 0
+
+for group in test_set:
+    for data in test_set[group]:
+        vote = k_nearest_neighbors(train_set, data, k=5)
+        if group == vote:
+            correct += 1
+        total += 1
+
+print(f'accuracy: {(correct / total) * 100}%')
