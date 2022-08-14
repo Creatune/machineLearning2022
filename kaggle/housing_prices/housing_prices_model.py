@@ -1,5 +1,5 @@
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import SGDRegressor
+from sklearn.linear_model import LinearRegression
 import pandas as pd
 
 home_data_train = pd.read_csv('train.csv')
@@ -15,7 +15,7 @@ print(test_X.describe())
 
 test_X = test_X.fillna(3086, axis=0)
 # model = RandomForestRegressor()
-model = SGDRegressor()
+model = LinearRegression()
 model.fit(train_X, train_y)
 y_pred = model.predict(test_X)
 print(y_pred)
